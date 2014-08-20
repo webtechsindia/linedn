@@ -11,7 +11,48 @@
 |
 */
 
-Route::get('/', function()
+
+//Route::resource('posts', 'PostsController');
+
+
+Route::any('/', 'UsersController@login');
+Route::any('/login', 'UsersController@login');
+Route::any('/logout', 'UsersController@logout');
+
+Route::any('/facebook', 'FacebookController@getFBaccessToken');
+Route::any('/twitter', 'TwitterController@gettwLoginLink');
+Route::any('/tw/access', 'TwitterController@getTWAccessToken');
+Route::any('/linkedin', 'LinkedinController@getlkLoginLink');
+Route::any('/lk/access', 'LinkedinController@getlkAccessToken');
+
+Route::group(array('before' => 'auth'), function()
 {
-	return View::make('hello');
+	Route::any('/posts', 'PostController@index');
+	Route::any('/readstream', 'PostsController@readstream');
+
+	
 });
+App::bind('FBaccess', function()
+{
+    return new FacebookController;
+});
+App::bind('twaccess', function()
+{
+    return new TwitterController;
+});
+App::bind('lkaccess', function()
+{
+    return new linkedinController;
+});
+
+	//Route::any('/posts', 'PostController@index');
+
+Route::any('/error', function(){
+	return View::make('errors.loginerror');
+});
+
+// App::missing(function($exception)
+// {
+//     return Response::view('The page was not found'	, array(), 404);
+// });
+

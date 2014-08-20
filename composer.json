@@ -6,7 +6,10 @@
 	"require": {
 		"laravel/framework": "4.2.*",
 		 "facebook/php-sdk": "dev-master",
-		 "way/generators": "2.*"
+		 "way/generators": "2.*",
+		 "intervention/image": "2.*",
+		 "linkedinapi/linkedin": "dev-master",
+		 "abraham/twitteroauth": "dev-add-composer-json"
 	},
 	"autoload": {
 		"classmap": [
@@ -15,7 +18,10 @@
 			"app/models",
 			"app/database/migrations",
 			"app/database/seeds",
-			"app/tests/TestCase.php"
+			"app/tests/TestCase.php",
+			"vendor/facebook/php-sdk/src/facebook.php",
+			"vendor/linkedinapi/linkedin/LinkedIn/LinkedIn.php",
+			"vendor/abraham/twitteroauth/twitteroauth/twitteroauth.php"
 		]
 	},
 	"scripts": {
