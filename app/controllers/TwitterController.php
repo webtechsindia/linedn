@@ -58,25 +58,69 @@ class TwitterController extends BaseController {
 	function readpost(){
 		$user  = User::find(2);
 		$tokens=	unserialize($user->access_token);
-		
 		$connection                     = new TwitterOAuth('QsAk6xZNLibwUocWUobNHEWNw', 'JQhQgeBGjAeXeUMmbGDx2ZWuGCR9M2NTAWTWY5P7gL0FqJPchu',  $tokens['oauth_token'],$tokens['oauth_token_secret']);
         $data = $connection->get('account/verify_credentials');   
-        $timeline 				=	$connection->get('statuses/user_timeline');		
-		echo "<pre>";
-		print_r($timeline);
-		exit;
-	}         
+        $timeline 				=	$connection->get('statuses/user_timeline',array('count'=>5));		
+		$twitterdata 				=	array();
+
+		foreach($timeline as $key=>$val){
+			 $twitterdata['text']				=	$val->text;
+			 $twitterdata['social_id']	=	$val->user->id;
+			 $twitterdata['social_type']		=	3;
+			 $twitterdata['tw_id']			=	$val->id;
+			$twitterdata['image']			=	"";	
+			 if(isset($val->extended_entities->media[0]->media_url)){
+			  	$extensions = array(
+				    1 => ".gif",
+				    2 => ".jpg",
+				    3 => ".png",
+				);
+			  	$randomname						=	substr(md5(rand()), 0, 7);
+			  	$imagetype  					= 	exif_imagetype($val->extended_entities->media[0]->media_url);
+			  	$filename 						=	$randomname.$extensions[$imagetype];
+			  	copy($val->extended_entities->media[0]->media_url,public_path()."/upload/".$filename);
+			  	$twitterdata['image']			=	$filename;
+			}			
+			 $rules = [
+			 'text' => 'required',
+			 'tw_id' => 'required|unique:posts',
+			 'social_id'=>'required',
+			];
+
+			$validator = Validator::make($twitterdata,$rules);
+			if (!$validator->fails())
+			{
+				DB::table('posts')->insert(
+					     $twitterdata
+					);
+			}
+			
+		}
+
+		 
+	}
 
 	function twitterinpost($id){
-		$post = Post::find($id);
-		$oauth_token 	=	'2298174770-Do6vs7II6cUuzs7jWcuhJiXFD8AhXqEnPqvgZPq';
-		$oauth_token_secret = '35TQfKJLeuMlirWlcYgeXK7iOPhZm8F7VPAXSjSbvpfhT';
+		$post 			= 	Post::find($id);
+		$user  			= 	User::find(2);
+		$tokens 		=	unserialize($user->access_token);
+		$connection    	= 	new TwitterOAuth('QsAk6xZNLibwUocWUobNHEWNw', 'JQhQgeBGjAeXeUMmbGDx2ZWuGCR9M2NTAWTWY5P7gL0FqJPchu',  $tokens['oauth_token'],$tokens['oauth_token_secret']);
+       	$image_path		=		public_path()."/upload/".$post->image;
 
-		$connection 			= new TwitterOAuth('9PviV7LT5g6rpuKxjpk9n6n6A', 'GwPfUrHYtbPm0hBZ99mCYjPpuOYSi8hA11el7LKJdNciljfopM', $oauth_token,$oauth_token_secret);
-		$connection->post('statuses/update', array('status' =>"asdasdasd"));		
+		$handle 		= fopen($image_path,'rb');
+		$image     	= fread($handle,filesize($image_path));
+		fclose($handle);
 
+		$params 		= array(
+							 'media[]' => "{$image};type=image/jpeg;filename={$image_path}",
+							 'status'  => $post->text
+					 		);
 
-	}
+		$post= $connection->post('statuses/update_with_media',$params,true);
+    	$connection->post('statuses/update_with_media', $params);		
+    	$timeline 				=	$connection->get('statuses/user_timeline',array('count'=>1));	
+    	Post::where('id', '=', $id)->update(array('tw_id' => $timeline[0]->id));
+    	}
 
 
 }

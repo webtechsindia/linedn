@@ -44,12 +44,12 @@
                     <!-- menu -->
                     <ul class="sidebar-menu">
                         <li class="active">
-                            <a href="index">
+                            <a href="/posts">
                                 <i class="fa fa-dashboard"></i> <span>Posts</span>
                             </a>
                         </li>
                         <li class="active">
-                            <a href="post/add">
+                            <a href="/posts/add">
                                 <i class="fa fa-dashboard"></i> <span>New Posts</span>
                             </a>
                         </li>
@@ -73,6 +73,14 @@
                         <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
                         <li class="active">Dashboard</li>
                     </ol>
+
+                    @if($errors->has())
+                    <div class="alert alert-warning alert-dismissable">
+                       @foreach ($errors->all() as $error)
+                          <div>{{ $error }}</div>
+                      @endforeach
+                      </div>
+                    @endif
                 </section>
                 <section class="content">
                        @yield('content')

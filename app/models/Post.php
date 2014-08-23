@@ -4,10 +4,18 @@ class Post extends \Eloquent {
 
 	// Add your validation rules here
 	public static $rules = [
-	 'title' => 'required',
+
 	 'text' => 'required',
+	  'title' => 'required',
 	 'image' => 'mimes:jpeg,bmp,png',
-	 'link' => 'required'
+	 'link' => 'required|url'
+	];
+	public static $rules_validate = [
+
+	 'text' => 'required',
+	  'title' => 'required',
+	 'image' => 'required',
+	 'link' => 'required|url'
 	];
 
 	// Don't forget to fill this array

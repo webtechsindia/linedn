@@ -7,6 +7,7 @@ class PostsController extends \BaseController {
 	 *
 	 * @return Response
 	 */
+
 	protected $facebook ;
 	protected $linkedin;
 	protected $twitter;
@@ -26,10 +27,10 @@ class PostsController extends \BaseController {
 	}
 
 	public function readstream(){
-		//$this->facebook->readpost();;
-		//$this->twitter->readpost();
+		$this->facebook->readpost();;
+		$this->twitter->readpost();
 		$this->linkedin->readpost();
-
+		return Redirect::to('/posts');
 	}
 
 	
@@ -58,7 +59,7 @@ class PostsController extends \BaseController {
 					$post->image  =$filename."_".$rand.".".$extension;
 					$post->link  = Input::get('link');
 					if($post->save()){
-						return Redirect::to('/index');
+						return Redirect::to('/posts');
 					}else{
 						die('error');
 					}
@@ -66,7 +67,6 @@ class PostsController extends \BaseController {
 					print_r( $validator->messages());
 				}	
 		}
-
 		return View::make('posts.create');
 	}
 
@@ -120,13 +120,33 @@ class PostsController extends \BaseController {
 	
 
 	public function share($id){
-			//var_dump($this->facebook);
-			$test = app::make('FacebookCon');
-			
-		 // $this->facebookpost($id);
-		 // $this->linkedinpost($id);
-		 // $this->twitterinpost($id);
-		
+
+		$post = Post::findOrFail($id);
+
+		$valid 		= array('title'=> $post->title,'text'=>$post->text,'image'=>URL::to('/').'/upload/'.$post->image,'link'=>$post->link);
+
+		$validator = Validator::make($valid,Post::$rules_validate);
+		if ($validator->fails()){
+			return Redirect::to('/posts/update/'.$id)->withErrors($validator->messages());
+		}else{
+
+
+			if($post->fb_id==""){
+				
+			 //	$this->facebook->facebookpost($id);
+			 }
+
+			 if($post->tw_id ==""){
+			 	 $this->twitter->twitterinpost($id);
+			}
+
+			if($post->lk_id==""){
+				$this->linkedin->linkedinpost($id);
+			}
+
+		}
+
+		return Redirect::to('/posts');
 	}
 
 
@@ -148,7 +168,6 @@ class PostsController extends \BaseController {
 			$validator = Validator::make(Input::all(),Post::$rules);
 			if (!$validator->fails())
 				{
-				
 					if(Input::file('image')){
 						$file  = Input::file('image');			
 						$rand = str_random(12);
@@ -163,12 +182,13 @@ class PostsController extends \BaseController {
 					$post->image  =$filename."_".$rand.".".$extension;
 					$post->link  = Input::get('link');
 					if($post->save()){
-						return Redirect::to('/index');
+						return Redirect::to('/posts');
 					}else{
 						die('error');
 					}
 				}else{
-					print_r( $validator->messages());
+					return Redirect::to('/posts/update/'.$id)->withErrors($validator->messages());
+					
 				}	
 			
 		}else{

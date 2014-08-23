@@ -18,6 +18,7 @@
 Route::any('/', 'UsersController@login');
 Route::any('/login', 'UsersController@login');
 Route::any('/logout', 'UsersController@logout');
+Route::any('/auth', 'UsersController@auth');
 
 Route::any('/facebook', 'FacebookController@getFBaccessToken');
 Route::any('/twitter', 'TwitterController@gettwLoginLink');
@@ -27,8 +28,15 @@ Route::any('/lk/access', 'LinkedinController@getlkAccessToken');
 
 Route::group(array('before' => 'auth'), function()
 {
-	Route::any('/posts', 'PostController@index');
+	Route::any('/posts', 'PostsController@index');
+	Route::any('/posts/share/{id}', 'PostsController@share');
+	Route::any('/posts/update/{id}', 'PostsController@update');
+	Route::any('/posts/view/{id}', 'PostsController@show');
+	Route::any('/posts/add/', 'PostsController@create');
+	
+	
 	Route::any('/readstream', 'PostsController@readstream');
+	
 
 	
 });

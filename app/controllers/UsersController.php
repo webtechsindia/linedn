@@ -11,8 +11,8 @@ class UsersController extends \BaseController {
 	
 	public function index()
 	{
-		$users = User::all();
 
+		$users = User::all();
 		return View::make('admin');
 	}
 
@@ -26,17 +26,19 @@ class UsersController extends \BaseController {
 	{
 		return View::make('users.create');
 	}
-	public function login(){
 
+	public function login(){
 			return View::make('login.login');
 	}
+
+	
 	public function auth(){
 		$email  	= 	Input::get('email');
 		$password 	=	Input::get('password');
 
 		if (Auth::attempt(array('email' => $email, 'password' => $password)))
 			{
-			    return Redirect::intended('index');
+			    return Redirect::intended('/posts');
 			}else{
 				die("Invalid Details ");
 			}
@@ -46,6 +48,8 @@ class UsersController extends \BaseController {
 	function logout(){
 
 		Auth::logout();
+		 return Redirect::intended('/');
+
 	}
 
 	/**

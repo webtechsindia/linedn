@@ -72,17 +72,61 @@ class LinkedinController extends BaseController {
 		$tokens=	$user->access_token;
 		$this->linkedin->setAccessToken($tokens);
 		$feeds 	=	$this->linkedin->get('/people/~/network/updates');	
-		print_r($feeds);
+		$linkininfeeds	=	Array();
+		foreach($feeds['values'] as $key=>$val){
+			$linkininfeeds['lk_id'] = $val['updateContent']['person']['currentShare']['id'];
+			$linkininfeeds['text'] = $val['updateContent']['person']['currentShare']['comment'];
+			$linkininfeeds['title'] = $val['updateContent']['person']['currentShare']['content']['title'];
+			$linkininfeeds['social_id'] = $val['updateContent']['person']['currentShare']['author']['id'];
+			$linkininfeeds['social_type'] = 4;
+			$linkininfeeds['image']		=	"";
+			if(isset($val['updateContent']['person']['currentShare']['content']['submittedUrl']))
+			$linkininfeeds['link'] = $val['updateContent']['person']['currentShare']['content']['submittedUrl'];
+
+			if(isset($val['updateContent']['person']['currentShare']['content']['submittedImageUrl'])){
+				$extensions = array(
+				    1 => ".gif",
+				    2 => ".jpg",
+				    3 => ".png",
+				);
+			  	$randomname						=	substr(md5(rand()), 0, 11);
+			  	try{
+				  	$imagetype  					= 	exif_imagetype($val['updateContent']['person']['currentShare']['content']['submittedImageUrl']);
+				  	$filename 						=	$randomname.$extensions[$imagetype];
+				  	copy($val['updateContent']['person']['currentShare']['content']['submittedImageUrl'],public_path()."/upload/".$filename);
+				  	$linkininfeeds['image']			=	$filename;
+				}catch(Exception $e){
+					
+				}  	
+			}	
+
+
+			 $rules = [
+			 'text' => 'required',
+			 'lk_id' => 'required|unique:posts',
+			 'social_id'=>'required',
+			];
+			$validator = Validator::make($linkininfeeds,$rules);
+			if (!$validator->fails())
+			{
+				DB::table('posts')->insert(
+					     $linkininfeeds
+					);
+			}
+		}
 	}
 	public function linkedinpost($id)
 	{
-		$post = Post::find($id);
 		$linkind = array('api_key' => '75d1x7seww8259','api_secret' =>'trjzhhAKKucC5oN0','callback_url'=>'http://linden.com/lk/access');
 		$this->linkedin = new LinkedIn\LinkedIn($linkind);
-		$lkaccess = "AQUZU1F4YPAbjBnGppQ0EuRpr_qZ1guCHt3c3WVMAjKzY3Z_QsFUD4dZmAsIO6GeeNiczf3hpO9lXOfLIpAaIr9MW9gm8HzWgjy-nDjTPn53l24HmZ52Eog_GHu7I5qsOrMGaFjCY1o1L29NBg_xSL6tY8AFPQZS2THZo6hEVGNjA3b73QQ";
-		$this->linkedin->setAccessToken($lkaccess);
-		$this->linkedin->post('/people/~/shares',array('comment'=>'testing','visibility'=>array('code'=>'anyone'),'content'=>array('title'=>$post->title,'description'=>$post->text,'submitted-url'=>'http://linden.com/post/share/1','submitted_image_url'=>'http://kinlane-productions.s3.amazonaws.com/api-evangelist-site/building-blocks/bw-linkedin.png')));
-			
+		$post 		= 	Post::find($id);
+		$user  		= 	User::find(5);
+		$tokens		=	$user->access_token;
+		$this->linkedin->setAccessToken($tokens);
+		$this->linkedin->post('/people/~/shares',array('comment'=>'testing','visibility'=>array('code'=>'anyone'),'content'=>array('title'=>$post->title,'description'=>$post->text,'submitted-url'=>$post->link,'submitted_image_url'=>$post->image)));
+		$feeds 	=	$this->linkedin->get('/people/~/network/updates');
+		$post->lk_id = $feeds['values'][0]['updateContent']['person']['currentShare']['id'];
+		$post->save();
 	}
 
 }
