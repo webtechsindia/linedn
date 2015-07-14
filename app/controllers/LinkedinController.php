@@ -6,7 +6,7 @@ class LinkedinController extends BaseController {
 
 	public function getlkLoginLink()
 	{
-		$linkind = array('api_key' => '75d1x7seww8259','api_secret' =>'trjzhhAKKucC5oN0','callback_url'=>'http://linden.com/lk/access');
+		$linkind = array('api_key' => '75d1x7seww8259','api_secret' =>'trjzhhAKKucC5oN0','callback_url'=>'http://54.201.56.87/lk/access');
 		$linked = new LinkedIn\LinkedIn($linkind);
 		 $url = $linked->getLoginUrl(
 								  array(
@@ -21,7 +21,7 @@ class LinkedinController extends BaseController {
 	public function getLkAccessToken(){
 		$code 	=	Input::get('code');
 		//$post = Post::find($id);
-		$linkind = array('api_key' => '75d1x7seww8259','api_secret' =>'trjzhhAKKucC5oN0','callback_url'=>'http://linden.com/lk/access');
+		$linkind = array('api_key' => '75d1x7seww8259','api_secret' =>'trjzhhAKKucC5oN0','callback_url'=>'http://54.201.56.87/lk/access');
 		$this->linkedin = new LinkedIn\LinkedIn($linkind);
 		$access = $this->linkedin->getAccessToken($code);
 		$this->linkedin->setAccessToken($access);
@@ -47,8 +47,10 @@ class LinkedinController extends BaseController {
 			{
 				if($validator->messages()->get('social_id')){
 					$userdetails = User::where('social_id', '=', $data['id'])->first();
+					$userdetails->access_token = $access;
+					$userdetails->save();
 					if(Auth::loginUsingId($userdetails->id)){
-						return Redirect::to('post');
+						return Redirect::to('posts');
 					}
 				}
 				else if($validator->messages()->get('email')){
@@ -61,22 +63,27 @@ class LinkedinController extends BaseController {
 			}else{
 				$user = User::create($insertarray);
 				if(Auth::loginUsingId($user->id)){
-						return Redirect::to('/post');
+						return Redirect::to('/posts');
 				}
 			}
 	}
 	public function readpost(){
-		$linkind = array('api_key' => '75d1x7seww8259','api_secret' =>'trjzhhAKKucC5oN0','callback_url'=>'http://linden.com/lk/access');
+		$linkind = array('api_key' => '75d1x7seww8259','api_secret' =>'trjzhhAKKucC5oN0','callback_url'=>'http://54.201.56.87/lk/access');
 		$this->linkedin = new LinkedIn\LinkedIn($linkind);
 		$user  = User::find(5);
 		$tokens=	$user->access_token;
 		$this->linkedin->setAccessToken($tokens);
 		$feeds 	=	$this->linkedin->get('/people/~/network/updates');	
 		$linkininfeeds	=	Array();
+		//int_r($feeds['values']);
+		
 		foreach($feeds['values'] as $key=>$val){
-			$linkininfeeds['lk_id'] = $val['updateContent']['person']['currentShare']['id'];
+			if(!isset($val['updateContent']['person']))
+				continue;				
+			$linkininfeeds  =       Array();
+			$linkininfeeds['lk_id'] = trim($val['updateContent']['person']['currentShare']['id']);
 			$linkininfeeds['text'] = $val['updateContent']['person']['currentShare']['comment'];
-			$linkininfeeds['title'] = $val['updateContent']['person']['currentShare']['content']['title'];
+		//	$linkininfeeds['title'] = $val['updateContent']['person']['currentShare']['content']['title'];
 			$linkininfeeds['social_id'] = $val['updateContent']['person']['currentShare']['author']['id'];
 			$linkininfeeds['social_type'] = 4;
 			$linkininfeeds['image']		=	"";
@@ -106,26 +113,37 @@ class LinkedinController extends BaseController {
 			 'lk_id' => 'required|unique:posts',
 			 'social_id'=>'required',
 			];
+//				print_r($linkininfeeds);
 			$validator = Validator::make($linkininfeeds,$rules);
-			if (!$validator->fails())
+			if ($validator->fails())
 			{
+			}else
+				{
+				print_r($linkininfeeds);
+
 				DB::table('posts')->insert(
-					     $linkininfeeds
-					);
+                                             $linkininfeeds
+                                        );
+
 			}
 		}
+//		exit;
 	}
 	public function linkedinpost($id)
 	{
-		$linkind = array('api_key' => '75d1x7seww8259','api_secret' =>'trjzhhAKKucC5oN0','callback_url'=>'http://linden.com/lk/access');
+		$linkind = array('api_key' => '75d1x7seww8259','api_secret' =>'trjzhhAKKucC5oN0','callback_url'=>'http://54.201.56.87/lk/access');
 		$this->linkedin = new LinkedIn\LinkedIn($linkind);
 		$post 		= 	Post::find($id);
 		$user  		= 	User::find(5);
 		$tokens		=	$user->access_token;
 		$this->linkedin->setAccessToken($tokens);
-		$this->linkedin->post('/people/~/shares',array('comment'=>'testing','visibility'=>array('code'=>'anyone'),'content'=>array('title'=>$post->title,'description'=>$post->text,'submitted-url'=>$post->link,'submitted_image_url'=>$post->image)));
-		$feeds 	=	$this->linkedin->get('/people/~/network/updates');
-		$post->lk_id = $feeds['values'][0]['updateContent']['person']['currentShare']['id'];
+	print_r(array('comment'=>$post->title,'visibility'=>array('code'=>'anyone'),'content'=>array('title'=>$post->title,'description'=>$post->text,'submitted-url'=>$post->link,'submitted_image_url'=>$post->lk_imageurl)));
+//exit;
+		$lkid = $this->linkedin->post('/people/~/shares',array('comment'=>$post->title,'visibility'=>array('code'=>'anyone'),'content'=>array('title'=>$post->title,'description'=>$post->text,'submitted-url'=>$post->link,'submitted_image_url'=>$post->lk_imageurl)));
+		$feeds 	=	$this->linkedin->get('/people/~/network/updates/key='.$lkid['updateKey']);
+//		print_r($feeds);
+//		exit;
+		$post->lk_id = $feeds['updateContent']['person']['currentShare']['id'];
 		$post->save();
 	}
 

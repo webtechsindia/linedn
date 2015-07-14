@@ -8,7 +8,8 @@ class Post extends \Eloquent {
 	 'text' => 'required',
 	  'title' => 'required',
 	 'image' => 'mimes:jpeg,bmp,png',
-	 'link' => 'required|url'
+	 'link' => 'required|url',
+	'lk_imageurl'=>'required|url'
 	];
 	public static $rules_validate = [
 

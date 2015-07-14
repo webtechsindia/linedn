@@ -28,6 +28,10 @@
                         <label for="exampleInputEmail1">link</label>
                         <input type="text" name='link' class="form-control" id="exampleInputEmail1" placeholder="Enter link">
                     </div>
+			<div class="form-group">
+                        <label for="exampleInputEmail1">linkedin img URL</label>
+                        <input type="text" name='lk_imageurl' class="form-control" id="exampleInputEmail1" placeholder="Enter linkedin image link">
+                    </div>
                     
                 </div><!-- /.box-body -->
 

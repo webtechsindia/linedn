@@ -7,7 +7,7 @@
             <div class="box-header">
                 <h3 class="box-title">Posts</h3>
                 <div class="box-tools">
-                     <a href="/readstream">
+                     <a href="./readstream">
                                 <button type="submit" class="btn pull-right btn-primary">Get Posts</button>
                     </a>
                 </div>
@@ -17,8 +17,8 @@
                     <tbody>
                     <tr>
                         <th>ID</th>
-                        <th width="300px">Title</th>
-                        <th width="300px">Text</th>
+                        <th width="100px">Title</th>
+                        <th width="100px">Text</th>
                         <th width="100px">link</th>
                         <th>Facebook</th>
                         <th>Twitter</th>

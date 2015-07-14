@@ -6,7 +6,7 @@ class TwitterController extends BaseController {
 
 	 public function gettwLoginLink(){
 	        $this->twitter = new TwitterOAuth('QsAk6xZNLibwUocWUobNHEWNw', 'JQhQgeBGjAeXeUMmbGDx2ZWuGCR9M2NTAWTWY5P7gL0FqJPchu');
-	        $temporary_credentials = $this->twitter->getRequestToken('http://linden.com/tw/access');
+	        $temporary_credentials = $this->twitter->getRequestToken('http://54.201.56.87/tw/access');
 	        $value = Session::put('twitdetails', $temporary_credentials);
 	        $url =  $this->twitter->getAuthorizeURL($temporary_credentials);
 	        return View::make('login.twitter',compact('url'));
@@ -41,7 +41,7 @@ class TwitterController extends BaseController {
 					$userdetails->access_token = serialize($token_credentials);
 					$userdetails->save();
 					if(Auth::loginUsingId($userdetails->id)){
-						return Redirect::to('post');
+						return Redirect::to('posts');
 					}
 				}else{
 					return Redirect::to('error')->withErrors($validator);
@@ -49,7 +49,7 @@ class TwitterController extends BaseController {
 			}else{
 				$user = User::create($insertarray);
 				if(Auth::loginUsingId($user->id)){
-						return Redirect::to('/post');
+						return Redirect::to('/posts');
 				}
 			}	
 		}

@@ -10,9 +10,10 @@ class FacebookController extends BaseController {
 
 	public function readpost(){
 		$this->facebook = new Facebook($this->config);
-		$facebookdetails = User::find(9);
+		$facebookdetails = User::find(8);
 		$this->facebook->setAccessToken($facebookdetails->access_token);
 		$feeds			=	$this->facebook->api('277700802417164/feed?&limit=5', 'GET');
+		
 		$facebookfeeds	=	array();
 		foreach($feeds['data'] as $key=>$val){
 			$facebookfeeds['text']		=	$val['message'];
@@ -54,6 +55,7 @@ class FacebookController extends BaseController {
 	public function getFBaccessToken(){
 
 		$facebook = new Facebook($this->config);
+	//	print_r($facebook);
 		$user = $facebook->getUser();
 		if($user){
 			$access  	= $facebook->getAccessToken();
@@ -87,7 +89,7 @@ class FacebookController extends BaseController {
 						$userdetails->access_token		=	$access;
 						$userdetails->save();
 						if(Auth::loginUsingId($userdetails->id)){
-							return Redirect::to('post');
+							return Redirect::to('/posts');
 						}
 
 					}else{
@@ -113,7 +115,7 @@ class FacebookController extends BaseController {
 
 		}else{
 			User::create($insertarray);
-			return Redirect::to('post');
+			return Redirect::to('posts');
 		}			
 
 
@@ -133,25 +135,26 @@ class FacebookController extends BaseController {
 		$post = Post::find($id);
 		$user  			= 	User::find(8);
 		
-		$this->facebook = new Facebook(array(
-			 'appId'  => '790702710969266',
-			  'secret' => '0274a122ced250e25a36531f4ab781eb',
-			)
-		);
-		
+		$this->facebook = new Facebook($this->config);
+	
+		print_r($user->access_token);
+		//exit;
+		$this->facebook->setAccessToken($user->access_token);		
 		$attachment = array(
 						'caption' => $post->title,
 						'message' => $post->title,
 						 'description' => $post->text,
-			             'name' => $post->title,
-			            'link' => $post->link,
-			          	'picture'=> 'http://www.picturesnew.com/media/images/image-background.jpg',
-						'access_token'=>'790702710969266|0274a122ced250e25a36531f4ab781eb'
-				    );
-		$this->facebook->signeduser = $user->social_id;
-		$this->facebook->api('/618667244856279/links?uid='.$user->social_id, 'POST', $attachment);
-
-		$post->fb_status = 1;
+			        	     'name' => $post->title,
+				            'picture' => URL::to('/')."/upload/".$post->image ,
+				          	'link'=>$post->link 
+					   );
+//		print_r($attachment);
+//		exit;
+//		$this->facebook->signeduser = $user->social_id;
+		$response = $this->facebook->api('/277700802417164/feed','POST', $attachment);
+		$post->fb_id	=	$response['id'];
+		
+//		$post->fb_status = 1;
 		$post->save();
 
 	}

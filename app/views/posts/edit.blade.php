@@ -29,6 +29,10 @@
                         <label for="exampleInputEmail1">link</label>
                         <input type="text" name='link' value="{{$post->link}}" class="form-control" id="exampleInputEmail1" placeholder="Enter link">
                     </div>
+			<div class="form-group">
+                        <label for="exampleInputEmail1">linkedin img URL</label>
+                        <input type="text" name='lk_imageurl' value="{{$post->lk_imageurl}}" class="form-control" id="exampleInputEmail1" placeholder="Linkedin image should be from the domain as the link given above">
+                    </div>
                     <div style="display:none" class="form-group">
                     	
                     	<input type="text" name="id" value="{{$post->id}}"> 

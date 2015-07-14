@@ -22,7 +22,7 @@ class PostsController extends \BaseController {
 
 	public function index()
 	{
-		$posts = Post::all();
+		$posts = Post::orderBy('id', 'DESC')->get();;
 		return View::make('posts.index', compact('posts'));
 	}
 
@@ -55,8 +55,9 @@ class PostsController extends \BaseController {
 					$upload_success = $file->move(public_path()."/upload",$filename."_".$rand.".".$extension);	
 					$post = new Post;
 					$post->title  = Input::get('title');
-					$post->text  = Input::get('text');
+					$post->lk_imageurl  = Input::get('lk_imageurl');
 					$post->image  =$filename."_".$rand.".".$extension;
+					 $post->text  = Input::get('text');
 					$post->link  = Input::get('link');
 					if($post->save()){
 						return Redirect::to('/posts');
@@ -133,7 +134,8 @@ class PostsController extends \BaseController {
 
 			if($post->fb_id==""){
 				
-			 //	$this->facebook->facebookpost($id);
+			 	$this->facebook->facebookpost($id);
+				
 			 }
 
 			 if($post->tw_id ==""){
@@ -178,9 +180,13 @@ class PostsController extends \BaseController {
 					$post = Post::find(Input::get('id'));
 					$post->title  = Input::get('title');
 					$post->text  = Input::get('text');
+					 $post->lk_imageurl  = Input::get('lk_imageurl');
+
+					//echo $upload_success;
 					if(isset($upload_success))
 					$post->image  =$filename."_".$rand.".".$extension;
 					$post->link  = Input::get('link');
+//					echo $filename."_".$rand.".".$extension;
 					if($post->save()){
 						return Redirect::to('/posts');
 					}else{
